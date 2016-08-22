@@ -41,7 +41,7 @@ public class Visitor implements Traversal {
 		return foundWords;
 
 	}
-	private void addWordsToIndex(String[] words){
+	private synchronized void addWordsToIndex(String[] words){
 		for(String s: words){
 			index.add(s, currentUrl.toString());
 		}

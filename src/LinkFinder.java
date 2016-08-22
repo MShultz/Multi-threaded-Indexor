@@ -22,7 +22,6 @@ public class LinkFinder {
 	}
 
 	public void processPage(InputStream in) {
-
 		for (String line : getLines(in).toArray(String[]::new)) {
 			visit.getLine(line);
 		}

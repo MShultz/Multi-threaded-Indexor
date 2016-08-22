@@ -1,11 +1,10 @@
-
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class WebTraversal {
+	private int threadCount = 0;
 	private int maxVisits;
 	private URL currentPageURL;
 	private ArrayList<String> visitedPages = new ArrayList<String>();
@@ -27,14 +26,29 @@ public class WebTraversal {
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			}
-			visit.getURL(currentPageURL);
-			finder.processPage(createInputStream(currentPage));
+			Thread thread = new Thread(new CrawlPage(currentPageURL, finder, this), "cp");
+			threadCount++;
+			thread.start();
 			addToHasVisited(currentPage);
 			addToFoundList(formatter.formatLinks(finder.getLinks().iterator(), currentPageURL));
 		} while (visitedPages.size() < maxVisits && !visitedEqualsFound());
+		waitForState();
 		visit.closeIndex();
 	}
 
+	public synchronized void decrementCounter(){
+		threadCount--;
+		notifyAll();	
+	}
+	private synchronized void waitForState(){
+		while(threadCount != 0){
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	private void addToFoundList(Iterator<String> foundLinks) {
 		if (foundLinks.hasNext()) {
 			do {
@@ -60,17 +74,7 @@ public class WebTraversal {
 		return equals;
 	}
 
-	private InputStream createInputStream(String URL) {
-		URL currentURL = null;
-		InputStream stream = null;
-		try {
-			currentURL = new URL(URL);
-			stream = currentURL.openStream();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return stream;
-	}
+
 
 	private boolean hasFound(String URL) {
 		boolean hasFound = false;
