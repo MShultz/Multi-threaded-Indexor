@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class WebTraversal {
-	private int threadCount = 0;
+	public int threadCount = 0;
 	private int maxVisits;
 	private URL currentPageURL;
 	private ArrayList<String> visitedPages = new ArrayList<String>();
@@ -18,8 +18,7 @@ public class WebTraversal {
 	public void traverseWeb() {
 		Visitor visit = new Visitor();
 		LinkFinder finder = new LinkFinder(visit);
-		LinkFormatting formatter = new LinkFormatting();
-		do {
+		do {	
 			String currentPage = foundPages.get(visitedPages.size());
 			try {
 				currentPageURL = new URL(currentPage);
@@ -28,16 +27,20 @@ public class WebTraversal {
 			}
 			Thread thread = new Thread(new CrawlPage(currentPageURL, finder, this), "cp");
 			threadCount++;
-			thread.start();
 			addToHasVisited(currentPage);
-			addToFoundList(formatter.formatLinks(finder.getLinks().iterator(), currentPageURL));
+			thread.start();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		} while (visitedPages.size() < maxVisits && !visitedEqualsFound());
 		waitForState();
 		visit.closeIndex();
 	}
 
-	public synchronized void decrementCounter(){
-		threadCount--;
+	public synchronized void decrementCounter(String currentPage){
+		threadCount--;	
 		notifyAll();	
 	}
 	private synchronized void waitForState(){
@@ -49,7 +52,7 @@ public class WebTraversal {
 			}
 		}
 	}
-	private void addToFoundList(Iterator<String> foundLinks) {
+	public void addToFoundList(Iterator<String> foundLinks) {
 		if (foundLinks.hasNext()) {
 			do {
 				String currentFoundLink = foundLinks.next();

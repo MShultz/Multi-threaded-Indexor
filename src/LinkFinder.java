@@ -44,6 +44,7 @@ public class LinkFinder {
 	}
 
 	public Stream<String> getLinks() {
+	
 		return linkList.stream();
 	}
 }
